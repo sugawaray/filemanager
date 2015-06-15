@@ -6,6 +6,7 @@
 #include "filemanager/rmdir.h"
 #include "filemanager/move/copy_dir.h"
 #include "filemanager/move/overwrite.h"
+#include "filemanager/move/to_fmroot.h"
 #include "filemanager/move/to_paths_not_managed.h"
 
 namespace fm {
@@ -31,6 +32,7 @@ void run_filemanager_tests()
 	run_to_paths_not_managed_tests();
 	run_overwrite_tests();
 	run_init_tests();
+	run_to_fmroot_tests();
 }
 
 } // test
