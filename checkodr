@@ -1,0 +1,6 @@
+#! /bin/sh -
+count=$(./duplicated_classes | wc -l)
+if [ ${count} -ne 0 ]
+then
+	echo "warning duplicated classes."
+fi

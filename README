@@ -1,0 +1,114 @@
+* ABOUT THIS TOOL
+
+        This tool is a simple command line file manager.
+
+        It attaches names to files. And you can locate the files
+        with the names.
+
+        It needs a directory named '.fm' at the root of the directory
+        hierachy it manages.
+
+        * This tool is under construction. And it may not work properly.
+          It may destroy files.
+
+* ABOUT EACH COMMANDS
+
+        This tool contains following commands.
+
+        * fm-cp
+                This command copies files to destination paths. The files at
+                the destination paths have the same names as the copied files.
+
+                fm-cp [-b .fm_directory_parent_path] source target
+                fm-cp [-b .fm_directory_parent_path] [-R] source ... target
+
+        * fm-get
+                This command locates files with the given names. It locates
+                the files which have all of the names.
+
+                fm-get [-b .fm_directory_parent_path] name ...
+
+        * fm-getcat
+                This command gives names which a specified file has. It gives
+                all names which this tool manages when it is called without
+                any arguments.
+
+                fm-getcat [-b .fm_directory_parent_path] 
+                fm-getcat [-b .fm_directory_parent_path] file
+
+        * fm-init
+                This command creates a directory named '.fm' at the current
+                working directory. It needs the directory to work.
+
+        * fm-mv
+                This command moves files to destination paths. The files
+                have the same names they had before they were moved.
+
+                fm-mv [-b .fm_directory_parent_path] source target
+                fm-mv [-b .fm_directory_parent_path] source ... target
+
+        * fm-refresh
+                This command removes information this tool manages that is
+                used for the files which do not exist anymore.
+
+		fm-refresh [-b .fm_directory_parent_path] 
+
+        * fm-rm
+                This command removes specified files. The files which are
+                removed by this command are not located with the names which
+                they had.
+
+                fm-rm [-b .fm_directory_parent_path] [-R] file ...
+
+        * fm-set
+                This command sets names for a specified file.
+
+                fm-set [-b .fm_directory_parent_path] file name ...
+
+	'-b .fm_directory_parent_path' is a common option. If commands are
+	called with it, they use the specified .fm directory to operate.
+
+* EXAMPLE
+
+        1. At the first time, you need to call fm-init at the directory
+           whose descendant directories you want to manage files with
+           this tool.
+
+                $ fm-init
+
+        2. You attach a name to a file.
+
+                $ fm-set ./a_file samples
+                $ fm-set ./b_file samples important
+
+        3. After that, you can locate files with the names when you call
+           fm-get at the descendent path of the directory where you have
+           called fm-init.
+
+           For example.
+                $ fm-get samples
+           will show
+                /an/absolute/path/to/a_file
+                /an/absolute/path/to/b_file
+
+           and
+                $ fm-get samples important
+           will show
+                /an/absolute/path/to/b_file
+
+        4. As long as you use fm-mv and fm-cp to move or copy files,
+           The names you attach to a file are preserved.
+
+* DEPENDENCIES
+
+	This tool depends on the following tools and libraries.
+
+		* gcc (that can compile c++ sources.)
+		* sqlite3
+		* check(unit test framework)
+
+* BUGS
+
+	* fm-cp and fm-mv have a bug. They delete source files' names
+	  when the destination directory is the parent directory of the
+          .fm directory.

@@ -1,0 +1,8 @@
+* The strings which represent relative pathes from the parent directory of
+.fm directory should be expressed as a class object because the strings are
+not simply relative pathes and have some implicit rules. And it should be
+generally avoided that implicit rules scatter around.
+
+* fs::copy() function does not have tests for the case of close failures.
+
+* (DONE)avoid using string::back().

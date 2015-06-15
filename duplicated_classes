@@ -1,0 +1,4 @@
+#! /bin/sh -
+find . -name '*.h'	\
+	-exec grep -e '^class[ \t]\{1,\}[[:alpha:]]\{1,\}.*{[ \t]*$' {} \; |
+	sort | uniq -c | grep -ve '^[ \t]*1[ \t]'

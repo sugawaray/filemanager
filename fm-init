@@ -1,0 +1,5 @@
+#! /bin/sh -
+
+# This script creates the .fm directory at the current working directory.
+# The .fm directory it creates has a mode bit '700'.
+/bin/mkdir -m 700 ./.fm
