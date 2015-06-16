@@ -46,20 +46,76 @@ private:
 	Absolute_path root;
 };
 
-void t1()
-{
-	Fixture f;
-	Absolute_path s(f.getd1().child("srcfile1"));
-	::fs::create_emptyfile(s);
-	Filemanager m;
-	::ml::test::fixture::set_category(m.get_map(), "d1/srcfile1", "catA");
-	m.copy(s, f.get_root());
+class File_test : private Fixture {
+public:
+	void test();
+protected:
+	virtual void call_method(const Absolute_path& src,
+		const Absolute_path& dest) = 0;
+	virtual void verify() = 0;
 
-	auto v(::ml::test::fixture::get_values(m.get_map(), "catA"));
+	Filemanager m;
+};
+
+void File_test::test()
+{
+	Absolute_path s(getd1().child("srcfile1"));
+	::fs::create_emptyfile(s);
+	::ml::test::fixture::set_category(m.get_map(), "d1/srcfile1", "catA");
+
+	call_method(s, get_root());
+
+	verify();
+}
+
+class Copy_file_test : public File_test {
+public:
+	void call_method(const Absolute_path& src,
+		const Absolute_path& dest) {
+		m.copy(src, dest);
+	}
+
+	void verify();
+};
+
+using ::ml::test::fixture::get_values;
+
+void Copy_file_test::verify()
+{
+	auto v(get_values(m.get_map(), "catA"));
 	A(v.size() == 2, __FILE__, __LINE__);
 	std::sort(v.begin(), v.end());
 	A(v.at(0) == "d1/srcfile1", __FILE__, __LINE__);
 	A(v.at(1) == "srcfile1", __FILE__, __LINE__);
+}
+
+class Move_file_test : public File_test {
+public:
+	void call_method(const Absolute_path& src,
+		const Absolute_path& dest) {
+		m.move(src, dest);
+	}
+
+	void verify();
+};
+
+void Move_file_test::verify()
+{
+	auto v(get_values(m.get_map(), "catA"));
+	A(v.size() == 1, __FILE__, __LINE__);
+	A(v.at(0) == "srcfile1", __FILE__, __LINE__);
+}
+
+void t1()
+{
+	Copy_file_test t;
+	t.test();
+}
+
+void t2()
+{
+	Move_file_test t;
+	t.test();
 }
 
 } // unnamed
@@ -73,6 +129,9 @@ void run_to_fmroot_tests()
 
 	run(	"It can copy a file with names to the fm root directory "
 		"without it's names deleted.", t1);
+
+	run(	"It can move a file with names to the fm root directory "
+		"without it's names deleted.", t2);
 }
 
 } // test

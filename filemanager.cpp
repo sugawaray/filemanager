@@ -265,11 +265,7 @@ void Filemanager::move(const Absolute_path& src, const Absolute_path& dest)
 	int fssrc_type(get_file_type(src));
 	int fsdest_type(get_file_type(dest));
 	int src_type(map->get_file_type(filesystem->get_fm_path(src)));
-	int dest_type;
-	if (filesystem->is_descendant(dest))
-		dest_type = map->get_file_type(filesystem->get_fm_path(dest));
-	else
-		dest_type = Not_managed;
+	int dest_type(get_map_file_type(dest));
 
 	if (dest_type == Impossible)
 		throw Invalid_destination();
