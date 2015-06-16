@@ -134,11 +134,7 @@ void Filemanager::copy(const Absolute_path& src, const Absolute_path& dest)
 	int fssrc_type(get_file_type(src));
 	int fsdest_type(get_file_type(dest));
 	int src_type(map->get_file_type(filesystem->get_fm_path(src)));
-	int dest_type;
-	if (filesystem->is_descendant(dest))
-		dest_type = map->get_file_type(filesystem->get_fm_path(dest));
-	else
-		dest_type = Not_managed;
+	int dest_type(get_map_file_type(dest));
 
 	if (dest_type == Impossible)
 		throw Invalid_destination();
@@ -390,6 +386,7 @@ int Filemanager::rmdir(const Absolute_path& target)
 
 void Filemanager::init(const Absolute_path& fm_dir)
 {
+	root = fm_dir.parent();
 	filesystem.reset(new Filesystem(fm_dir));
 	map.reset(new Fm_map_impl(filesystem->get_dbfilepath()));
 }
@@ -494,6 +491,16 @@ int Filemanager::get_file_type(const Absolute_path& path)
 		return Type_dir;
 	else
 		return Type_file;
+}
+
+int Filemanager::get_map_file_type(const Absolute_path& path)
+{
+	if (root.to_string() == path.to_string())
+		return map->get_file_type(filesystem->get_fm_path(path));
+	else if (filesystem->is_descendant(path))
+		return map->get_file_type(filesystem->get_fm_path(path));
+	else
+		return Not_managed;
 }
 
 bool Filemanager::is_type_dir_to_dir(int src_type, int dest_type)

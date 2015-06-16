@@ -78,6 +78,14 @@ START_TEST(return_file_type_given_similar_name_files)
 }
 END_TEST
 
+START_TEST(return_dir_type_given_root_value)
+{
+	Fixture f;
+	Fm_map_impl map(f.get_dbfilepath());
+	fail_unless(map.get_file_type("") == Type_dir, "result");
+}
+END_TEST
+
 namespace fm {
 namespace test {
 
@@ -92,6 +100,7 @@ TCase* create_get_file_type_tcase()
 	tcase_add_test(tcase,
 		should_return_impossible_when_the_value_conflicts);
 	tcase_add_test(tcase, return_file_type_given_similar_name_files);
+	tcase_add_test(tcase, return_dir_type_given_root_value);
 	return tcase;
 }
 

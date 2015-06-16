@@ -26,6 +26,8 @@ Fm_map_impl::Fm_map_impl(const string& dbfilepath)
 
 int Fm_map_impl::get_file_type(const string& fm_path)
 {
+	if (fm_path.empty())
+		return Type_dir;
 	vector<string> values;
 	auto inserter(back_inserter(values));
 	auto receiver(Receiver_fun(inserter));
