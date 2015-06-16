@@ -130,8 +130,6 @@ void Copy_dir_test::test()
 	auto v(get_values(m.get_map(), "catA"));
 	A(v.size() == 2, __FILE__, __LINE__);
 	sort(v.begin(), v.end());
-	std::cerr << v.at(0) << std::endl;
-	std::cerr << v.at(1) << std::endl;
 	A(v.at(0) == "d1/srcdir1/srcfile1", __FILE__, __LINE__);
 	A(v.at(1) == "srcdir1/srcfile1", __FILE__, __LINE__);
 }
