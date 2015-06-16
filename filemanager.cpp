@@ -192,11 +192,15 @@ void Filemanager::copydir(const Absolute_path& src, const Absolute_path& dest)
 	int fssrc_type(get_file_type(src));
 	int fsdest_type(get_file_type(dest));
 	int src_type(map->get_file_type(filesystem->get_fm_path(src)));
+#if 0
 	int dest_type;
 	if (filesystem->is_descendant(dest))
 		dest_type = map->get_file_type(filesystem->get_fm_path(dest));
 	else
 		dest_type = Not_managed;
+#else
+	int dest_type(get_map_file_type(dest));
+#endif
 
 	if (dest_type == Impossible)
 		throw Invalid_destination();
@@ -528,7 +532,10 @@ public:
 	}
 	pair<string, string> operator()(const string& in) const {
 		string tmp(in.substr(src_dir.length()));
-		return make_pair(in, dest_dir + "/" + tmp);
+		if (dest_dir.empty())
+			return make_pair(in, tmp);
+		else
+			return make_pair(in, dest_dir + "/" + tmp);
 	}
 private:
 	const string& src_dir;
@@ -554,7 +561,11 @@ void Filemanager::dir_to_dir(Move_func f, const Absolute_path& src,
 		src_root += "/";
 	string src_base(src_fm_path.substr(src_root.length()));
 	string dest_base(filesystem->get_fm_path(dest));
-	string dest_path(dest_base + "/" + src_base);
+	string dest_path;
+	if (dest_base.empty())
+		dest_path = src_base;
+	else
+		dest_path = dest_base + "/" + src_base;
 	if (src_fm_path.find(dest_path) == 0)
 		throw Invalid_destination();
 	transform(values.begin(), values.end(), back_inserter(src_dest),

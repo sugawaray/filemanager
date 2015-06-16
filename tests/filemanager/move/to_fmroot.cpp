@@ -24,12 +24,14 @@ inline void A(T t, U u, V v)
 	::test::fixture::Assert(t, u, v);
 }
 
+using ::fs::mkdir;
+
 class Fixture : public ::test::Fm_filesystem_fixture {
 public:
 	Fixture() {
 		root = Absolute_path(get_fm_parent());
 		d1 = root.child("d1");
-		::fs::mkdir(d1);
+		mkdir(d1);
 		chdir(d1.to_filepath_string().c_str());
 	}
 
@@ -57,11 +59,14 @@ protected:
 	Filemanager m;
 };
 
+using ::ml::test::fixture::set_category;
+using ::fs::create_emptyfile;
+
 void File_test::test()
 {
 	Absolute_path s(getd1().child("srcfile1"));
-	::fs::create_emptyfile(s);
-	::ml::test::fixture::set_category(m.get_map(), "d1/srcfile1", "catA");
+	create_emptyfile(s);
+	set_category(m.get_map(), "d1/srcfile1", "catA");
 
 	call_method(s, get_root());
 
@@ -79,12 +84,13 @@ public:
 };
 
 using ::ml::test::fixture::get_values;
+using std::sort;
 
 void Copy_file_test::verify()
 {
 	auto v(get_values(m.get_map(), "catA"));
 	A(v.size() == 2, __FILE__, __LINE__);
-	std::sort(v.begin(), v.end());
+	sort(v.begin(), v.end());
 	A(v.at(0) == "d1/srcfile1", __FILE__, __LINE__);
 	A(v.at(1) == "srcfile1", __FILE__, __LINE__);
 }
@@ -106,6 +112,30 @@ void Move_file_test::verify()
 	A(v.at(0) == "srcfile1", __FILE__, __LINE__);
 }
 
+class Copy_dir_test : private Fixture {
+public:
+	void test();
+};
+
+void Copy_dir_test::test()
+{
+	Absolute_path s(getd1().child("srcdir1"));
+	mkdir(s);
+	create_emptyfile(s.child("srcfile1"));
+	Filemanager m;
+	set_category(m.get_map(), "d1/srcdir1/srcfile1", "catA");
+
+	m.copydir(s, get_root());
+
+	auto v(get_values(m.get_map(), "catA"));
+	A(v.size() == 2, __FILE__, __LINE__);
+	sort(v.begin(), v.end());
+	std::cerr << v.at(0) << std::endl;
+	std::cerr << v.at(1) << std::endl;
+	A(v.at(0) == "d1/srcdir1/srcfile1", __FILE__, __LINE__);
+	A(v.at(1) == "srcdir1/srcfile1", __FILE__, __LINE__);
+}
+
 void t1()
 {
 	Copy_file_test t;
@@ -115,6 +145,12 @@ void t1()
 void t2()
 {
 	Move_file_test t;
+	t.test();
+}
+
+void t3()
+{
+	Copy_dir_test t;
 	t.test();
 }
 
@@ -132,6 +168,9 @@ void run_to_fmroot_tests()
 
 	run(	"It can move a file with names to the fm root directory "
 		"without it's names deleted.", t2);
+
+	run(	"It can copy a directory with child names to the fm root "
+		"directory without it's names deleted.", t3);
 }
 
 } // test
