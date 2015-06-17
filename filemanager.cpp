@@ -192,15 +192,7 @@ void Filemanager::copydir(const Absolute_path& src, const Absolute_path& dest)
 	int fssrc_type(get_file_type(src));
 	int fsdest_type(get_file_type(dest));
 	int src_type(map->get_file_type(filesystem->get_fm_path(src)));
-#if 0
-	int dest_type;
-	if (filesystem->is_descendant(dest))
-		dest_type = map->get_file_type(filesystem->get_fm_path(dest));
-	else
-		dest_type = Not_managed;
-#else
 	int dest_type(get_map_file_type(dest));
-#endif
 
 	if (dest_type == Impossible)
 		throw Invalid_destination();
@@ -451,34 +443,6 @@ bool Filemanager::in_sync_fd(int src, int dest)
 		return true;
 	else
 		return false;
-}
-
-bool Filemanager::does_file_exist(const char* path)
-{
-	int r(access(path, F_OK));
-	if (r == 0)
-		return true;
-	else
-		return false;
-}
-
-bool Filemanager::does_file_type_match(const Absolute_path& path, int type)
-{
-	using gfs::Success;
-
-	pair<int, bool> cr(gfs::is_dir(path));
-
-	if (cr.first != Success)
-		return cr.first == gfs::Not_exist && type == Not_exist;
-
-	switch (type) {
-	case Type_file:
-		return cr.first == Success && cr.second == false;
-	case Type_dir:
-		return cr.first == Success && cr.second == true;
-	default:
-		return false;
-	}
 }
 
 int Filemanager::get_file_type(const Absolute_path& path)

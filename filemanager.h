@@ -45,8 +45,6 @@ private:
 	static bool in_sync_fd(int src, int dest);
 	static int get_file_type(const Absolute_path& path);
 	int get_map_file_type(const Absolute_path& path);
-	static bool does_file_exist(const char* path);
-	static bool does_file_type_match(const Absolute_path& path, int type);
 	static bool is_type_dir_to_dir(int src_type, int dest_type);
 	static bool is_type_dir_to_dirpath(int src_type, int dest_type);
 	static bool is_type_file_to_file(int src_type, int dest_type);
