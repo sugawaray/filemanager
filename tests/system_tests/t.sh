@@ -687,6 +687,32 @@ file_exists ../destfile1/srcdir1/srcfile1
 does_not_have_any_cats ../destfile1/srcdir1/srcfile1
 )
 
+echo "fm-mv 30"
+(
+prepare_fmdir d1
+new_file srcfile1 "contentA"
+
+fm-mv srcfile1 srcfile1
+exit_status 0 "fm-mv"
+
+file_exists srcfile1
+equal_content "contentA" srcfile1 tmpfile1
+)
+
+echo "fm-mv 31"
+(
+prepare_fmdir d1
+new_cat_file srcfile1 "catA" "contentA"
+
+fm-mv srcfile1 srcfile1
+exit_status 0 "fm-mv"
+
+file_exists srcfile1
+equal_content "contentA" srcfile1 tmpfile1
+
+have_the_same_cat srcfile1 "catA"
+)
+
 echo "fm-refresh 1"
 (
 prepare_fmdir d1

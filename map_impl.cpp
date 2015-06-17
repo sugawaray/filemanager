@@ -122,6 +122,8 @@ void Map_impl::copy(const string& src, const string& dest)
 
 void Map_impl::move(const string& src, const string& dest)
 {
+	if (src == dest)
+		return;
 	copy(src, dest);
 	remove(src);
 }
