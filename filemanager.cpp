@@ -73,6 +73,13 @@ bool Path_processor::handle(const Path_node& node)
 
 } // unnamed
 
+inline void Filemanager::fs_copy(const Absolute_path& src,
+	const Absolute_path& dest)
+{
+	if (src.to_filepath_string() != dest.to_filepath_string())
+		gfs::copy(src, dest);
+}
+
 inline void Filemanager::map_move(const string& src, const string& dest)
 {
 	map->move(src, dest);
@@ -147,7 +154,7 @@ void Filemanager::copy(const Absolute_path& src, const Absolute_path& dest)
 			file_to_file(copy_func(), src, dest);
 		else
 			throw Out_of_sync();
-		gfs::copy(src, dest);
+		fs_copy(src, dest);
 	} else if (fssrc_type == Type_file && fsdest_type == Not_exist) {
 		if (dest_type == Not_managed)
 			;
@@ -155,7 +162,7 @@ void Filemanager::copy(const Absolute_path& src, const Absolute_path& dest)
 			file_to_file(copy_func(), src, dest);
 		else
 			throw Out_of_sync();
-		gfs::copy(src, dest);
+		fs_copy(src, dest);
 	} else if (fssrc_type == Type_file && fsdest_type == Type_dir) {
 		if (dest_type == Not_managed)
 			;
@@ -163,7 +170,7 @@ void Filemanager::copy(const Absolute_path& src, const Absolute_path& dest)
 			file_to_dir(copy_func(), src, dest);
 		else
 			throw Out_of_sync();
-		gfs::copy(src, dest.to_string() + src.basename());
+		fs_copy(src, dest.to_string() + src.basename());
 	} else if (fssrc_type == Not_exist && fsdest_type == Not_exist) {
 		if (in_sync_ddp(src_type, dest_type))
 			dir_to_dirpath(copy_func(), src, dest);
@@ -219,7 +226,7 @@ void Filemanager::copydir(const Absolute_path& src, const Absolute_path& dest)
 			file_to_file(copy_func(), src, dest);
 		else
 			throw Out_of_sync();
-		gfs::copy(src, dest);
+		fs_copy(src, dest);
 	} else if (fssrc_type == Type_file && fsdest_type == Not_exist) {
 		if (dest_type == Not_managed)
 			;
@@ -227,7 +234,7 @@ void Filemanager::copydir(const Absolute_path& src, const Absolute_path& dest)
 			file_to_file(copy_func(), src, dest);
 		else
 			throw Out_of_sync();
-		gfs::copy(src, dest);
+		fs_copy(src, dest);
 	} else if (fssrc_type == Type_file && fsdest_type == Type_dir) {
 		if (dest_type == Not_managed)
 			;
@@ -235,7 +242,7 @@ void Filemanager::copydir(const Absolute_path& src, const Absolute_path& dest)
 			file_to_dir(copy_func(), src, dest);
 		else
 			throw Out_of_sync();
-		gfs::copy(src, dest.to_string() + src.basename());
+		fs_copy(src, dest.to_string() + src.basename());
 	} else if (fssrc_type == Not_exist && fsdest_type == Not_exist) {
 		if (in_sync_ddp(src_type, dest_type))
 			dir_to_dirpath(copy_func(), src, dest);
@@ -572,7 +579,12 @@ void Filemanager::file_to_dir(Move_func f, const Absolute_path& src,
 void Filemanager::file_to_file(Move_func f, const Absolute_path& src,
 	const Absolute_path& dest)
 {
-	f(filesystem->get_fm_path(src), filesystem->get_fm_path(dest));
+	if (src.to_filepath_string() == dest.to_filepath_string()) {
+		(*fmcerr) << "the source and the destination are "
+			"the same file." << endl;
+	} else {
+		f(filesystem->get_fm_path(src), filesystem->get_fm_path(dest));
+	}
 }
 
 void Filemanager::rmdir_map(const Absolute_path& path)

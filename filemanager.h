@@ -60,6 +60,8 @@ private:
 	void rmdir_map(const Absolute_path& path);
 	Move_func move_func();
 	Move_func copy_func();
+	static void fs_copy(const Absolute_path& src,
+		const Absolute_path& dest);
 	void map_move(const std::string& src, const std::string& dest);
 	void map_copy(const std::string& src, const std::string& dest);
 	static void call_move(Move_func func,

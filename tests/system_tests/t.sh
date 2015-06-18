@@ -288,6 +288,79 @@ exit_status 1 "fm-getcat"
 does_not_have_any_cats ../destfile1
 )
 
+echo "fm-cp 14"
+(
+prepare_fmdir d1
+new_cat_file srcfile1 catA "content"
+
+fm-cp srcfile1 srcfile1
+exit_status 0 "fm-cp"
+
+file_exists srcfile1
+equal_content "content" srcfile1 tmpfile1
+
+have_the_same_cat srcfile1 catA
+
+if [ $(fm-cp srcfile1 srcfile1 2>&1 | wc -l) -eq 0 ]
+then
+	echo "error output"
+fi
+)
+
+echo "fm-cp 15"
+(
+prepare_fmdir d1
+new_file srcfile1 "content"
+
+fm-cp srcfile1 srcfile1
+exit_status 0 "fm-cp"
+
+file_exists srcfile1
+equal_content "content" srcfile1 tmpfile1
+
+does_not_have_any_cats srcfile1
+
+if [ $(fm-cp srcfile1 srcfile1 2>&1 | wc -l) -eq 0 ]
+then
+	echo "error output"
+fi
+)
+
+echo "fm-cp 16"
+(
+prepare_fmdir d1
+new_cat_file srcfile1 "catA" "content"
+rm -f srcfile1
+
+fm-cp srcfile1 srcfile1
+exit_status 0 "fm-cp"
+
+file_does_not_exist srcfile1
+
+have_the_same_cat srcfile1 "catA"
+
+if [ $(fm-cp srcfile1 srcfile1 2>&1 | wc -l) -eq 0 ]
+then
+	echo "error output"
+fi
+)
+
+echo "fm-cp 17"
+(
+prepare_fmdir d1
+rm -f srcfile1
+
+fm-cp srcfile1 srcfile1
+exit_status 0 "fm-cp"
+
+file_does_not_exist srcfile1
+
+if [ $(fm-cp srcfile1 srcfile1 2>&1 | wc -l) -eq 0 ]
+then
+	echo "error output"
+fi
+)
+
 echo "fm-mv 1"
 (
 prepare_fmdir d1
