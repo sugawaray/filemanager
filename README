@@ -107,8 +107,3 @@
 		* sqlite3
 		* check(unit test framework)
 
-* BUGS
-
-	* fm-cp and fm-mv have a bug. They delete source files' names
-	  when the destination directory is the parent directory of the
-          .fm directory.
