@@ -484,26 +484,6 @@ int Filemanager::get_map_file_type(const Absolute_path& path)
 		return Not_managed;
 }
 
-bool Filemanager::is_type_dir_to_dir(int src_type, int dest_type)
-{
-	return src_type == Type_dir && dest_type == Type_dir;
-}
-
-bool Filemanager::is_type_dir_to_dirpath(int src_type, int dest_type)
-{
-	return src_type == Type_dir && dest_type == Not_exist;
-}
-
-bool Filemanager::is_type_file_to_file(int src_type, int dest_type)
-{
-	return src_type == Type_file && dest_type == Type_file;
-}
-
-bool Filemanager::is_type_file_to_filepath(int src_type, int dest_type)
-{
-	return src_type == Type_file && dest_type == Not_exist;
-}
-
 namespace {
 
 class Make_move_pair {
