@@ -33,8 +33,12 @@
                 all names which this tool manages when it is called without
                 any arguments.
 
+		If -c option is specified, the command reads target
+		file list from standard input.
+
                 fm-getcat [-b .fm_directory_parent_path] 
                 fm-getcat [-b .fm_directory_parent_path] file
+		fm-getcat [-b .fm_directory_parent_path] -c [file] < some input
 
         * fm-init
                 This command creates a directory named '.fm' at the current

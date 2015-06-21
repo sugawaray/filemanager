@@ -14,10 +14,12 @@
 #include <string_utils.h>
 #include <utils.h>
 #include <tests/fixture/assert.h>
+#include <tests/fixture/filemanager.h>
 #include <tests/fixture/filesystem.h>
 #include <tests/fixture/fm_filesystem.h>
 #include <tests/fixture/map.h>
 #include <tests/fixture/process_dir.h>
+#include <tests/fixture/utils.h>
 #include "fm_commands.h"
 
 namespace fm {
@@ -363,7 +365,14 @@ inline void reset_cout()
 	fmcout = &std::cout;
 }
 
+inline void reset_cin()
+{
+	fmcin = &std::cin;
+}
+
 using std::endl;
+using std::back_inserter;
+using su::split_string;
 
 namespace ngetcat {
 
@@ -387,7 +396,7 @@ void t1()
 	int r(fm::getcat(2, the_argv));
 
 	A(os.str() != "", __FILE__, __LINE__);
-	A(r == 1, __FILE__, __LINE__);
+	A(r == 0, __FILE__, __LINE__);
 }
 
 void t2()
@@ -444,6 +453,52 @@ void t3()
 	A(os.str() == expect.str(), __FILE__, __LINE__);
 }
 
+void t4(const char* ms)
+{
+	using ::test::fixture::return_param;
+	using nomagic::loc;
+
+	nomagic::Test t(ms);
+	auto aout(Auto_caller(reset_cout));
+	auto ain(Auto_caller(reset_cin));
+	::fm::filemanager::test::Fm_fixture f;
+	chdir(f.get_root().to_filepath_string().c_str());
+	auto& m(f.get_manager());
+
+	Absolute_path f1(return_param(create_emptyfile,
+		f.get_root().child("f1")));
+	set_category(m.get_map(), "f1", "catA");
+
+	Absolute_path f2(return_param(create_emptyfile,
+		f.get_root().child("f2")));
+	set_category(m.get_map(), "f2", "catA", "catB");
+
+	ostringstream os;
+	fmcout = &os;
+
+	std::stringstream is;
+	fmcin = &is;
+
+	vector<char> v0(strtovec("fm-getcat"));
+	vector<char> v1(strtovec("-c"));
+	the_argv[0] = &v0.at(0);
+	the_argv[1] = &v1.at(0);
+	the_argv[2] = 0;
+
+	is << "f1" << endl;
+	is << "f2" << endl;
+	int r(getcat(2, the_argv));
+
+	t.a(r == 0, loc(__FILE__, __LINE__));
+	vector<string> v;
+	split_string(os.str(), "\n", back_inserter(v));
+	v.pop_back();
+	std::sort(v.begin(), v.end());
+	t.a(v.size() == 2, loc(__FILE__, __LINE__));
+	t.a(v.at(0) == "catA", loc(__FILE__, __LINE__));
+	t.a(v.at(1) == "catB", loc(__FILE__, __LINE__));
+}
+
 } // ngetcat
 
 namespace nset {
@@ -470,7 +525,7 @@ void t1()
 
 	Filemanager m(f.get_parent_fmdir());
 	vector<string> t;
-	m.get_map().get_categories(std::back_inserter(t));
+	m.get_map().get_categories(back_inserter(t));
 	A(t.size() == 1, __FILE__, __LINE__);
 	A(t.at(0) == "catA", __FILE__, __LINE__);
 }
@@ -624,7 +679,7 @@ void t1()
 	fm::get(4, the_argv);
 
 	vector<string> v;
-	su::split_string(os.str(), "\n", std::back_inserter(v));
+	split_string(os.str(), "\n", back_inserter(v));
 	A(v.size() == 2, __FILE__, __LINE__);
 	A(v.at(0) != "", __FILE__, __LINE__);
 	A(v.at(1) == "", __FILE__, __LINE__);
@@ -847,7 +902,7 @@ void getcat_tests()
 
 	run("The base directory can be specified by the -b flag.", t3);
 
-	//run("It reads target list from standard input.", t4);
+	run("It reads target list from standard input.", t4);
 }
 
 void set_tests()

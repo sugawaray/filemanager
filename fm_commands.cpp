@@ -358,53 +358,104 @@ public:
 	}
 
 	bool has_target() const {
-		return target_exists;
+		return !targets.empty();
 	}
 
-	const string& get_target() const {
-		return target;
+	const vector<string>& get_targets() const {
+		return targets;
 	}
 
 protected:
+	string get_extra_opts() const {
+		return "c";
+	}
+
+	void procopt(int c, const char* arg) {
+		if (c == 'c')
+			from_stdin = true;
+	}
+
 	void procremain(int argc, char* argv[], int index) {
 		if (argc - index > 1)
 			return;
+		if (from_stdin)
+			read_targets();
 		if (argc - index == 1) {
-			target_exists = true;
-			target.assign(argv[index]);
+			targets.push_back(argv[index]);
 		}
 		valid = true;
 	}
 
 private:
-	Getcat_command()	:	target_exists(false) {
+	Getcat_command()
+		:	from_stdin(false) {
 	}
 
-	bool target_exists;
-	string target;
+	void read_targets();
+
+	bool from_stdin;
+	vector<string> targets;
 };
+
+void Getcat_command::read_targets()
+{
+	vector<string> v;
+	string s;
+	while (getline(*fmcin, s)) {
+		if (s.empty())
+			continue;
+		if (s.find_first_not_of(' ') == string::npos &&
+			s.find_first_not_of('\t') == string::npos)
+			continue;
+		v.push_back(s);
+	}
+	targets.swap(v);
+}
+
+namespace {
+
+class Getcat {
+public:
+	Getcat(Filemanager& manager, vector<string>& buffer)
+		:	m(manager), b(buffer) {
+	}
+
+	void operator()(const string& target) const {
+		int r(m.getcat(get_abs_path(target), back_inserter(b)));
+		if (r == Success)
+			;
+		else {
+			(*fmcerr) << "The file(" << target
+				<< ") is not managed." << endl;
+		}
+	}
+
+private:
+	Filemanager& m;
+	vector<string>& b;
+};
+
+} // unnamed
 
 int getcat(int argc, char* argv[])
 {
-	Getcat_command command(Getcat_command::process_arguments(argc, argv));
-	if (!command.is_valid())
+	Getcat_command co(Getcat_command::process_arguments(argc, argv));
+	if (!co.is_valid())
 		return 1;
-	unique_ptr<Filemanager> manager(command.get_filemanager());
-	if (!manager)
+	unique_ptr<Filemanager> m(co.get_filemanager());
+	if (!m)
 		return 1;
-	vector<string> categories;
-	auto& map(manager->get_map());
-	if (!command.has_target())
-		map.get_categories(back_inserter(categories));
-	else if (manager->getcat(get_abs_path(command.get_target()),
-		back_inserter(categories)) == Success)
-		;
+	vector<string> ca;
+	auto& map(m->get_map());
+	if (!co.has_target())
+		map.get_categories(back_inserter(ca));
 	else {
-		(*fmcerr) << "The file is not managed." << endl;
-		return 1;
+		auto& t(co.get_targets());
+		for_each(t.begin(), t.end(), Getcat(*m, ca));
 	}
-	copy(categories.begin(), categories.end(),
-		ostream_iterator<string>((*fmcout), "\n"));
+	std::sort(ca.begin(), ca.end());
+	ca.erase(std::unique(ca.begin(), ca.end()), ca.end());
+	copy(ca.begin(), ca.end(), ostream_iterator<string>((*fmcout), "\n"));
 	return 0;
 }
 

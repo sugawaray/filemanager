@@ -227,9 +227,6 @@ exit_status 0 "fm-cp"
 
 file_exists ../destfile1
 equal_files srcfile1 ../destfile1
-
-fm-getcat ../destfile1
-exit_status 1 "fm-getcat"
 )
 
 echo "fm-cp 10"
@@ -243,9 +240,6 @@ exit_status 0
 
 file_exists ../destfile1
 equal_files srcfile1 ../destfile1
-
-fm-getcat ../destfile1
-exit_status 1 "fm-getcat"
 
 does_not_have_any_cats ../destfile1
 )
@@ -263,9 +257,6 @@ exit_status 0 "fm-cp"
 file_exists ../destfile1
 equal_files srcfile1 ../destfile1
 
-fm-getcat ../destfile1
-exit_status 1 "fm-getcat"
-
 does_not_have_any_cats ../destfile1
 )
 
@@ -281,9 +272,6 @@ exit_status 0 "fm-cp"
 
 file_exists ../destfile1
 equal_files srcfile1 ../destfile1
-
-fm-getcat ../destfile1
-exit_status 1 "fm-getcat"
 
 does_not_have_any_cats ../destfile1
 )
@@ -1043,26 +1031,29 @@ EOF
 equal_files ./t1 ./t2
 )
 
-#echo "fm-getcat 3"
-#(
-#prepare_fmdir d1
-#new_cat_file targetfile1 catA ""
-#new_cat_file targetfile2 catA ""
-#new_cat_file targetfile3 catB ""
-#new_cat_file targetfile4 catC ""
-#
-#cat <<-EOF > ./t1
-#targetfile1
-#targetfile2
-#targetfile3
-#EOF
-#fm-getcat < ./t1 > /dev/null
-#exit_status 0 "fm-getcat"
-#
-#fm-getcat < ./t1 > ./t2
-#cat <<-EOF | sort > ./t3
-#catA
-#catB
-#EOF
-#equal_files ./t2 ./t3
-#)
+echo "fm-getcat 3"
+(
+prepare_fmdir d1
+new_cat_file targetfile1 catA ""
+new_cat_file targetfile2 catA ""
+new_cat_file targetfile3 catB ""
+new_cat_file targetfile4 catC ""
+
+cat <<-EOF > ./t1
+targetfile1
+
+
+targetfile2
+
+targetfile3
+EOF
+fm-getcat -c < ./t1 > /dev/null
+exit_status 0 "fm-getcat"
+
+fm-getcat -c < ./t1 | sort > ./t2
+cat <<-EOF > ./t3
+catA
+catB
+EOF
+equal_files ./t2 ./t3
+)
