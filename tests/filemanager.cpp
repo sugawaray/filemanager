@@ -1,5 +1,6 @@
 #include "filemanager/copy.h"
 #include "filemanager/init.h"
+#include "filemanager/getcat.h"
 #include "filemanager/move.h"
 #include "filemanager/refresh.h"
 #include "filemanager/remove.h"
@@ -35,6 +36,7 @@ void run_filemanager_tests()
 	run_init_tests();
 	run_to_fmroot_tests();
 	run_src_equals_dest_tests();
+	run_getcat_tests();
 }
 
 } // test

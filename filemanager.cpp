@@ -263,6 +263,16 @@ void Filemanager::copydir(const Absolute_path& src, const Absolute_path& dest)
 		throw Invalid_destination();
 }
 
+int Filemanager::getcat(const Absolute_path& target, Inserter ins)
+{
+	if (filesystem->is_descendant(target)) {
+		string tmp(filesystem->get_fm_path(target));
+		map->get_categories(tmp, ins);
+		return Success;
+	} else
+		return Not_managed;
+}
+
 void Filemanager::move(const Absolute_path& src, const Absolute_path& dest)
 {
 	int fssrc_type(get_file_type(src));

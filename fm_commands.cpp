@@ -388,16 +388,12 @@ int getcat(int argc, char* argv[])
 	auto& map(manager->get_map());
 	if (!command.has_target())
 		map.get_categories(back_inserter(categories));
+	else if (manager->getcat(get_abs_path(argv[1]),
+		back_inserter(categories)) == Success)
+		;
 	else {
-		auto& fsref(manager->get_filesystem());
-		if (fsref.is_descendant(get_abs_path(argv[1]))) {
-			string target(manager->get_filesystem().get_fm_path(
-				get_abs_path(argv[1])));
-			map.get_categories(target, back_inserter(categories));
-		} else {
-			(*fmcerr) << "The file is not managed." << endl;
-			return 1;
-		}
+		(*fmcerr) << "The file is not managed." << endl;
+		return 1;
 	}
 	copy(categories.begin(), categories.end(),
 		ostream_iterator<string>(cout, "\n"));

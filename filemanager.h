@@ -2,9 +2,11 @@
 #define __FM_FILEMANAGER_H__
 
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 #include "fm.h"
 #include "fm_filesystem.h"
 #include "fm_map_impl.h"
@@ -13,6 +15,8 @@ namespace fm {
 
 class Filemanager {
 public:
+	typedef std::back_insert_iterator<std::vector<std::string> > Inserter;
+
 	Filemanager();
 	Filemanager(const Absolute_path& fm_dir);
 
@@ -28,6 +32,7 @@ public:
 		const Absolute_path& destination);
 	void copydir(const Absolute_path& source,
 		const Absolute_path& destination);
+	int getcat(const Absolute_path& target, Inserter ins);
 	void move(const Absolute_path& source,
 		const Absolute_path& destination);
 	void refresh();

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <sys/wait.h>
@@ -120,7 +121,7 @@ public:
 		}
 	}
 
-	// This is a Assert method.
+	// These are assert methods
 	void a(bool expr, const char* message) {
 		if (!expr) {
 			if (!message)
@@ -128,10 +129,22 @@ public:
 			mlist.push_back(message);
 		}
 	}
+
+	void a(bool expr, const std::string& message) {
+		if (!expr)
+			mlist.push_back(message);
+	}
 private:
 	std::string main;
 	std::vector<std::string> mlist;
 };
+
+inline std::string loc(const std::string& file, int line)
+{
+	std::ostringstream os;
+	os << file << "(" << line << ")";
+	return os.str();
+}
 
 } // nomagic
 

@@ -15,6 +15,9 @@ extern std::vector<std::string> get_values(Map& map,
 extern void set_category(Map& map, const std::string& target,
 	const std::string& category);
 
+extern void set_category(Map& map, const std::string& target,
+	const std::string& category1, const std::string& category2);
+
 } // fixture
 } // test
 } // ml
