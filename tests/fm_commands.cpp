@@ -363,6 +363,8 @@ inline void reset_cout()
 	fmcout = &std::cout;
 }
 
+using std::endl;
+
 namespace ngetcat {
 
 void t1()
@@ -424,7 +426,7 @@ void t3()
 	vector<char> v0(strtovec("fm-getcat"));
 	vector<char> v1(strtovec("-b"));
 	vector<char> v2(strtovec("../"));
-	vector<char> v3(strtovec("catA"));
+	vector<char> v3(strtovec("file1"));
 	the_argv[0] = &v0.at(0);
 	the_argv[1] = &v1.at(0);
 	the_argv[2] = &v2.at(0);
@@ -437,7 +439,9 @@ void t3()
 	int r(fm::getcat(4, the_argv));
 
 	A(r == 0, __FILE__, __LINE__);
-	A(os.str() == "", __FILE__, __LINE__);
+	ostringstream expect;
+	expect << "catB" << endl;
+	A(os.str() == expect.str(), __FILE__, __LINE__);
 }
 
 } // ngetcat
@@ -792,7 +796,6 @@ void t3()
 
 } // unnamed
 
-using std::endl;
 using nomagic::run;
 
 void cp_tests()
@@ -843,6 +846,8 @@ void getcat_tests()
 	run("It is an error if the filemanager construction failed.", t2);
 
 	run("The base directory can be specified by the -b flag.", t3);
+
+	//run("It reads target list from standard input.", t4);
 }
 
 void set_tests()

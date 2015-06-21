@@ -23,6 +23,7 @@ using fs::get_abs_path;
 
 namespace fm {
 
+std::istream* fmcin(&std::cin);
 std::ostream* fmcout(&std::cout);
 std::ostream* fmcerr(&std::cerr);
 
@@ -357,6 +358,10 @@ public:
 	}
 
 	bool has_target() const {
+		return target_exists;
+	}
+
+	const string& get_target() const {
 		return target;
 	}
 
@@ -364,16 +369,19 @@ protected:
 	void procremain(int argc, char* argv[], int index) {
 		if (argc - index > 1)
 			return;
-		if (argc - index == 1)
-			target = true;
+		if (argc - index == 1) {
+			target_exists = true;
+			target.assign(argv[index]);
+		}
 		valid = true;
 	}
 
 private:
-	Getcat_command()	:	target(false) {
+	Getcat_command()	:	target_exists(false) {
 	}
 
-	bool target;
+	bool target_exists;
+	string target;
 };
 
 int getcat(int argc, char* argv[])
@@ -388,7 +396,7 @@ int getcat(int argc, char* argv[])
 	auto& map(manager->get_map());
 	if (!command.has_target())
 		map.get_categories(back_inserter(categories));
-	else if (manager->getcat(get_abs_path(argv[1]),
+	else if (manager->getcat(get_abs_path(command.get_target()),
 		back_inserter(categories)) == Success)
 		;
 	else {
@@ -396,7 +404,7 @@ int getcat(int argc, char* argv[])
 		return 1;
 	}
 	copy(categories.begin(), categories.end(),
-		ostream_iterator<string>(cout, "\n"));
+		ostream_iterator<string>((*fmcout), "\n"));
 	return 0;
 }
 

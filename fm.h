@@ -1,7 +1,7 @@
 #ifndef __FM_H__
 #define __FM_H__
 
-#include <ostream>
+#include <iostream>
 
 namespace fs {
 	class Absolute_path;
@@ -10,6 +10,7 @@ namespace fs {
 namespace fm {
 	using ::fs::Absolute_path;
 
+extern std::istream* fmcin;
 extern std::ostream* fmcout;
 extern std::ostream* fmcerr;
 
