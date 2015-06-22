@@ -453,7 +453,20 @@ void t3()
 	A(os.str() == expect.str(), __FILE__, __LINE__);
 }
 
-void t4(const char* ms)
+using std::stringstream;
+
+class From_stdin_test {
+public:
+	From_stdin_test(stringstream& is)
+		:	is(is) {
+	}
+
+	void test(const char* ms);
+private:
+	stringstream& is;
+};
+
+void From_stdin_test::test(const char* ms)
 {
 	using ::test::fixture::return_param;
 	using nomagic::loc;
@@ -461,6 +474,7 @@ void t4(const char* ms)
 	nomagic::Test t(ms);
 	auto aout(Auto_caller(reset_cout));
 	auto ain(Auto_caller(reset_cin));
+	auto aerr(Auto_caller(reset_cerr));
 	::fm::filemanager::test::Fm_fixture f;
 	chdir(f.get_root().to_filepath_string().c_str());
 	auto& m(f.get_manager());
@@ -476,8 +490,10 @@ void t4(const char* ms)
 	ostringstream os;
 	fmcout = &os;
 
-	std::stringstream is;
 	fmcin = &is;
+
+	ostringstream oserr;
+	fmcerr = &oserr;
 
 	vector<char> v0(strtovec("fm-getcat"));
 	vector<char> v1(strtovec("-c"));
@@ -485,8 +501,6 @@ void t4(const char* ms)
 	the_argv[1] = &v1.at(0);
 	the_argv[2] = 0;
 
-	is << "f1" << endl;
-	is << "f2" << endl;
 	int r(getcat(2, the_argv));
 
 	t.a(r == 0, loc(__FILE__, __LINE__));
@@ -497,6 +511,28 @@ void t4(const char* ms)
 	t.a(v.size() == 2, loc(__FILE__, __LINE__));
 	t.a(v.at(0) == "catA", loc(__FILE__, __LINE__));
 	t.a(v.at(1) == "catB", loc(__FILE__, __LINE__));
+	t.a(oserr.str().empty(), loc(__FILE__, __LINE__));
+}
+
+void t4(const char* ms)
+{
+	stringstream is;
+	is << "f1" << endl;
+	is << "f2" << endl;
+	From_stdin_test t(is);
+	t.test(ms);
+}
+
+void t5(const char* ms)
+{
+	stringstream is;
+	is << "f1" << endl;
+	is << " " << endl;
+	is << " \t" << endl;
+	is << "\t" << endl;
+	is << "f2" << endl;
+	From_stdin_test t(is);
+	t.test(ms);
 }
 
 } // ngetcat
@@ -903,6 +939,8 @@ void getcat_tests()
 	run("The base directory can be specified by the -b flag.", t3);
 
 	run("It reads target list from standard input.", t4);
+
+	run("It ignores invalid lines when it reads from standard input.", t5);
 }
 
 void set_tests()

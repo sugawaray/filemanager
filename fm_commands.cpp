@@ -404,8 +404,7 @@ void Getcat_command::read_targets()
 	while (getline(*fmcin, s)) {
 		if (s.empty())
 			continue;
-		if (s.find_first_not_of(' ') == string::npos &&
-			s.find_first_not_of('\t') == string::npos)
+		if (s.find_first_not_of(" \t") == string::npos)
 			continue;
 		v.push_back(s);
 	}
