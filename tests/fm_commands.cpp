@@ -373,6 +373,54 @@ inline void reset_cin()
 using std::endl;
 using std::back_inserter;
 using su::split_string;
+using std::stringstream;
+using ::test::fixture::return_param;
+using nomagic::loc;
+using nomagic::Test;
+
+class From_stdin_test {
+public:
+	From_stdin_test(stringstream& is)
+		:	is(is) {
+	}
+
+	void test(const char* ms);
+protected:
+	virtual void prepare(Filemanager& manager) {
+	}
+
+	virtual void execute() = 0;
+
+	virtual void verify(Test& t) = 0;
+
+	::fm::filemanager::test::Fm_fixture f;
+	ostringstream os;
+	ostringstream oserr;
+private:
+	stringstream& is;
+};
+
+void From_stdin_test::test(const char* ms)
+{
+	using ::test::fixture::return_param;
+	using nomagic::loc;
+
+	nomagic::Test t(ms);
+	auto aout(Auto_caller(reset_cout));
+	auto ain(Auto_caller(reset_cin));
+	auto aerr(Auto_caller(reset_cerr));
+	chdir(f.get_root().to_filepath_string().c_str());
+	auto& m(f.get_manager());
+
+	prepare(m);
+
+	fmcout = &os;
+	fmcin = &is;
+	fmcerr = &oserr;
+
+	execute();
+	verify(t);
+}
 
 namespace ngetcat {
 
@@ -453,32 +501,25 @@ void t3()
 	A(os.str() == expect.str(), __FILE__, __LINE__);
 }
 
-using std::stringstream;
-
-class From_stdin_test {
+class Getcat_from_stdin_test : public From_stdin_test {
 public:
-	From_stdin_test(stringstream& is)
-		:	is(is) {
+	Getcat_from_stdin_test(stringstream& is)
+		:	From_stdin_test(is), r(-1) {
 	}
 
-	void test(const char* ms);
+protected:
+	void prepare(Filemanager& manager);
+	void execute();
+	void verify(Test& test);
+
 private:
-	stringstream& is;
+	vector<char> v0;
+	vector<char> v1;
+	int r;
 };
 
-void From_stdin_test::test(const char* ms)
+void Getcat_from_stdin_test::prepare(Filemanager& m)
 {
-	using ::test::fixture::return_param;
-	using nomagic::loc;
-
-	nomagic::Test t(ms);
-	auto aout(Auto_caller(reset_cout));
-	auto ain(Auto_caller(reset_cin));
-	auto aerr(Auto_caller(reset_cerr));
-	::fm::filemanager::test::Fm_fixture f;
-	chdir(f.get_root().to_filepath_string().c_str());
-	auto& m(f.get_manager());
-
 	Absolute_path f1(return_param(create_emptyfile,
 		f.get_root().child("f1")));
 	set_category(m.get_map(), "f1", "catA");
@@ -486,23 +527,21 @@ void From_stdin_test::test(const char* ms)
 	Absolute_path f2(return_param(create_emptyfile,
 		f.get_root().child("f2")));
 	set_category(m.get_map(), "f2", "catA", "catB");
+}
 
-	ostringstream os;
-	fmcout = &os;
-
-	fmcin = &is;
-
-	ostringstream oserr;
-	fmcerr = &oserr;
-
-	vector<char> v0(strtovec("fm-getcat"));
-	vector<char> v1(strtovec("-c"));
+void Getcat_from_stdin_test::execute()
+{
+	v0 = strtovec("fm-getcat");
+	v1 = strtovec("-c");
 	the_argv[0] = &v0.at(0);
 	the_argv[1] = &v1.at(0);
 	the_argv[2] = 0;
 
-	int r(getcat(2, the_argv));
+	r = getcat(2, the_argv);
+}
 
+void Getcat_from_stdin_test::verify(Test& t)
+{
 	t.a(r == 0, loc(__FILE__, __LINE__));
 	vector<string> v;
 	split_string(os.str(), "\n", back_inserter(v));
@@ -519,7 +558,7 @@ void t4(const char* ms)
 	stringstream is;
 	is << "f1" << endl;
 	is << "f2" << endl;
-	From_stdin_test t(is);
+	Getcat_from_stdin_test t(is);
 	t.test(ms);
 }
 
@@ -531,7 +570,7 @@ void t5(const char* ms)
 	is << " \t" << endl;
 	is << "\t" << endl;
 	is << "f2" << endl;
-	From_stdin_test t(is);
+	Getcat_from_stdin_test t(is);
 	t.test(ms);
 }
 
@@ -790,6 +829,93 @@ void t4()
 	A(r == 1, __FILE__, __LINE__);
 }
 
+class Get_from_stdin_test : public From_stdin_test {
+public:
+	Get_from_stdin_test(stringstream& is);
+
+	void set_no_name(bool value);
+protected:
+	void prepare(Filemanager& manager);
+	void execute();
+	void verify(Test& test);
+private:
+	vector<char> v0;
+	vector<char> v1;
+	vector<char> v2;
+	int r;
+	bool no_name;
+};
+
+Get_from_stdin_test::Get_from_stdin_test(stringstream& is)
+:	From_stdin_test(is), r(-1), no_name(false)
+{
+}
+
+void Get_from_stdin_test::set_no_name(bool value)
+{
+	no_name = value;
+}
+
+void Get_from_stdin_test::prepare(Filemanager& m)
+{
+	Absolute_path f1(return_param(create_emptyfile,
+		f.get_root().child("f1")));
+	set_category(m.get_map(), "f1", "catA", "catB", "catC");
+
+	Absolute_path f2(return_param(create_emptyfile,
+		f.get_root().child("f2")));
+	set_category(m.get_map(), "f2", "catA");
+}
+
+void Get_from_stdin_test::execute()
+{
+	v0 = strtovec("fm-get");
+	v1 = strtovec("-c");
+	v2 = strtovec("catC");
+	the_argv[0] = &v0.at(0);
+	the_argv[1] = &v1.at(0);
+	if (no_name)
+		the_argv[2] = 0;
+	else {
+		the_argv[2] = &v2.at(0);
+		the_argv[3] = 0;
+	}
+
+	r = get(no_name ? 2 : 3, the_argv);
+}
+
+void Get_from_stdin_test::verify(Test& t)
+{
+	t.a(r == 0, loc(__FILE__, __LINE__));
+	vector<string> v;
+	split_string(os.str(), "\n", back_inserter(v));
+	v.pop_back();
+	t.a(v.size() == 1, loc(__FILE__, __LINE__));
+	std::size_t length(std::char_traits<char>::length("f1"));
+	t.a(v.at(0).rfind("f1") == v.at(0).length() - length,
+		loc(__FILE__, __LINE__));
+}
+
+void t5(const char* ms)
+{
+	stringstream s;
+	s << "catA" << endl;
+	s << "catB" << endl;
+	Get_from_stdin_test t(s);
+	t.test(ms);
+}
+
+void t6(const char* ms)
+{
+	stringstream s;
+	s << "catA" << endl;
+	s << "catB" << endl;
+	s << "catC" << endl;
+	Get_from_stdin_test t(s);
+	t.set_no_name(true);
+	t.test(ms);
+}
+
 } // nget
 
 namespace nmv {
@@ -979,6 +1105,12 @@ void get_tests()
 	run("It is an error if the filemanager construction failed.", t3);
 
 	run("It is an error if any target file are not specified.", t4);
+
+	run("It reads name list from the standard input.", t5);
+
+	run(	"It is not an error if no names are specified "
+		"on the command line but some names specified at "
+		"the standard input.", t6);
 }
 
 void mv_tests()

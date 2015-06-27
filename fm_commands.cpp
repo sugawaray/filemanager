@@ -349,7 +349,43 @@ int rm(int argc, char* argv[])
 	return 0;
 }
 
-class Getcat_command : public Command {
+class From_stdin_impl {
+public:
+	From_stdin_impl();
+
+	bool from_stdin() const;
+	string get_extra_opts() const;
+
+	bool process(int c, const char* arg);
+private:
+	bool stdin_flag;
+};
+
+From_stdin_impl::From_stdin_impl()
+:	stdin_flag(false)
+{
+}
+
+bool From_stdin_impl::from_stdin() const
+{
+	return stdin_flag;
+}
+
+string From_stdin_impl::get_extra_opts() const
+{
+	return "c";
+}
+
+bool From_stdin_impl::process(int c, const char* arg)
+{
+	if (c == 'c') {
+		stdin_flag = true;
+		return true;
+	} else
+		return false;
+}
+
+class Getcat_command : public Command, private From_stdin_impl {
 public:
 	static Getcat_command process_arguments(int argc, char* argv[]) {
 		Getcat_command r;
@@ -367,18 +403,17 @@ public:
 
 protected:
 	string get_extra_opts() const {
-		return "c";
+		return From_stdin_impl::get_extra_opts();
 	}
 
 	void procopt(int c, const char* arg) {
-		if (c == 'c')
-			from_stdin = true;
+		From_stdin_impl::process(c, arg);
 	}
 
 	void procremain(int argc, char* argv[], int index) {
 		if (argc - index > 1)
 			return;
-		if (from_stdin)
+		if (from_stdin())
 			read_targets();
 		if (argc - index == 1) {
 			targets.push_back(argv[index]);
@@ -387,28 +422,37 @@ protected:
 	}
 
 private:
-	Getcat_command()
-		:	from_stdin(false) {
+	Getcat_command() {
 	}
 
 	void read_targets();
 
-	bool from_stdin;
 	vector<string> targets;
 };
 
-void Getcat_command::read_targets()
+template<class I>
+void read_nonempty_lines(std::istream& is, I ins)
 {
-	vector<string> v;
 	string s;
-	while (getline(*fmcin, s)) {
+	while (getline(is, s)) {
 		if (s.empty())
 			continue;
 		if (s.find_first_not_of(" \t") == string::npos)
 			continue;
-		v.push_back(s);
+		*ins++ = s;
 	}
-	targets.swap(v);
+}
+
+void read_nonempty_lines(vector<string>& v)
+{
+	vector<string> t;
+	read_nonempty_lines(*fmcin, back_inserter(t));
+	v.swap(t);
+}
+
+void Getcat_command::read_targets()
+{
+	read_nonempty_lines(targets);
 }
 
 namespace {
@@ -633,7 +677,7 @@ inline string to_filepath(Filemanager& m, const string& in)
 	return m.get_filesystem().convert_fm_path(in).to_filepath_string();
 }
 
-class Get_command : public Command {
+class Get_command : public Command, private From_stdin_impl {
 public:
 	static Get_command process_arguments(int argc, char* argv[]);
 
@@ -642,6 +686,14 @@ public:
 	}
 
 protected:
+	string get_extra_opts() const {
+		return From_stdin_impl::get_extra_opts();
+	}
+
+	void procopt(int c, const char* arg) {
+		From_stdin_impl::process(c, arg);
+	}
+
 	void procremain(int argc, char* argv[], int index);
 
 private:
@@ -660,8 +712,13 @@ Get_command Get_command::process_arguments(int argc, char* argv[])
 
 void Get_command::procremain(int argc, char* argv[], int index)
 {
-	if (argc - index <= 0)
+	if (from_stdin())
+		read_nonempty_lines(cats);
+	if (argc - index <= 0) {
+		if (!cats.empty())
+			valid = true;
 		return;
+	}
 
 	using std::bind;
 	using std::placeholders::_1;

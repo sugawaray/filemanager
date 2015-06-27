@@ -34,6 +34,16 @@ void set_category(Map& map, const string& target, const string& category1,
 	map.set(target, c.begin(), c.end());
 }
 
+void set_category(Map& m, const string& t, const string& c1,
+	const string& c2, const string& c3)
+{
+	vector<string> c;
+	c.push_back(c1);
+	c.push_back(c2);
+	c.push_back(c3);
+	m.set(t, c.begin(), c.end());
+}
+
 } // fixture
 } // test
 } // ml

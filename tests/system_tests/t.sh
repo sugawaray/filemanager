@@ -999,6 +999,28 @@ EOF
 equal_files ./t1 ./t2
 )
 
+echo "fm-get 4"
+(
+prepare_fmdir d1
+new_file targetfile1
+fm-set targetfile1 catA catB catC
+new_cat_file targetfile2 catA ""
+new_cat_file targetfile3 catC ""
+
+cat <<-EOF > ./t1
+catA
+catB
+EOF
+cat ./t1 | fm-get -c catC > /dev/null 2>&1
+exit_status 0 "fm-get"
+
+cat ./t1 | fm-get -c catC | sort > ./t2
+cat <<-EOF > ./t1
+$(pwd)/targetfile1
+EOF
+equal_files ./t1 ./t2
+)
+
 echo "fm-getcat 1"
 (
 prepare_fmdir d1

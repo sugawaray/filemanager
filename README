@@ -27,6 +27,8 @@
                 the files which have all of the names.
 
                 fm-get [-b .fm_directory_parent_path] name ...
+		fm-get [-b .fm_directory_parent_path] -c [name] ...	\
+			< some input
 
         * fm-getcat
                 This command gives names which a specified file has. It gives

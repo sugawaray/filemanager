@@ -18,6 +18,10 @@ extern void set_category(Map& map, const std::string& target,
 extern void set_category(Map& map, const std::string& target,
 	const std::string& category1, const std::string& category2);
 
+extern void set_category(Map& map, const std::string& target,
+	const std::string& category1, const std::string& category2,
+	const std::string& category3);
+
 } // fixture
 } // test
 } // ml
