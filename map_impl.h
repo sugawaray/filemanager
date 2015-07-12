@@ -22,6 +22,8 @@ public:
 	void copy(const std::string& source, const std::string& destination);
 	void move(const std::string& source, const std::string& destination);
 	void get(const std::vector<std::string>& categories, Inserter inserter);
+	void getall(const std::vector<std::string>& categories,
+		Inserter inserter);
 	void get_categories(Inserter inserter);
 	void get_categories(const std::string& target, Inserter inserter);
 	void get_values(const Sql_value_spec& value_spec,

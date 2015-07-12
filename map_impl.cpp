@@ -146,6 +146,10 @@ void Map_impl::get(const vector<string>& categories,
 	st.execute(collector);
 }
 
+void Map_impl::getall(const vector<string>& c, Map::Inserter ins)
+{
+}
+
 namespace {
 
 string column_string(sqlite3_stmt* record)

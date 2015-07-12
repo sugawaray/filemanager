@@ -23,6 +23,8 @@ public:
 		const std::string& destination) = 0;
 	virtual void get(const std::vector<std::string>& categories,
 		Inserter inserter) = 0;
+	virtual void getall(const std::vector<std::string>& categories,
+		Inserter inserter) = 0;
 	virtual void get_categories(Inserter inserter) = 0;
 	virtual void get_categories(const std::string& target,
 		Inserter inserter) = 0;
