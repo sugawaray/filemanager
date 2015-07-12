@@ -14,6 +14,7 @@ extern "C" {
 
 #include "absolute_path.h"
 #include "map_impl.h"
+#include "map_impl/getall.h"
 #include "statement.h"
 #include "string_utils.h"
 #include "filemanager.h"
@@ -115,6 +116,11 @@ int main(int argc, char* argv[])
 	if (doall || is_target(argc, argv, "test::fixture")) {
 		cerr << "test::fixture tests" << endl;
 		::test::fixture::run_filesystem_tests();
+	}
+
+	if (doall || is_target(argc, argv, "ml::Map_impl")) {
+		cerr << "ml::Map_impl tests" << endl;
+		::ml::map_impl::test::run_getall_tests();
 	}
 
 	if (doall) {
