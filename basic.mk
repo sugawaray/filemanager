@@ -44,7 +44,7 @@ LDFLAGS_COMMON = -lstdc++ -lsqlite3
 #LDFLAGS_COMMON = -lstdc++ -lsqlite3
 
 # libflag for the test framework 'check'
-CHECK_LIBFLAG = -lcheck_pic
+CHECK_LIBFLAG = -lcheck_pic -pthread -lrt -lm 
 #CHECK_LIBFLAG = -lcheck
 
 LDFLAGS = $(LDFLAGS_COMMON) $(LDFLAGS_ADDITION)
