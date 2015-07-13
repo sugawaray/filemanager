@@ -32,6 +32,9 @@ private:
 	void create_table();
 	int get_max_id();
 	db::Statement prepare_statement(const std::string& statement);
+	void get_values_with_categories(const std::string& statement,
+		const std::vector<std::string>& categories,
+		Inserter inserter);
 	static std::string convert_get_record(sqlite3_stmt* record);
 
 	sqlite3* db;

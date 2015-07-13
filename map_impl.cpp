@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include "except.h"
@@ -138,16 +139,35 @@ void Map_impl::get(const vector<string>& categories,
 			"AS t" << (i + 1) << " ON t" << i << ".value = " <<
 			"t" << (i + 1) << ".value ";
 	}
-	Statement st(prepare_statement(os.str()));
-	for (size_t i = 0; i < categories.size(); ++i)
-		st.bind_parameter(static_cast<int>(i + 1), categories.at(i));
-
-	auto collector(Record_collector_fun(inserter, convert_get_record));
-	st.execute(collector);
+	get_values_with_categories(os.str(), categories, inserter);
 }
+
+namespace {
+
+class Concat {
+public:
+	string operator()(const string& lhs, const string& rhs) const {
+		return lhs + rhs;
+	}
+};
+
+} // unnamed
 
 void Map_impl::getall(const vector<string>& c, Map::Inserter ins)
 {
+	if (c.empty())
+		return;
+	ostringstream os;
+	os << "SELECT DISTINCT value FROM map WHERE ";
+	vector<string> el(c.size(), "category = ? OR ");
+	string s(accumulate(el.begin(), el.end(), string(""), Concat()));
+	if (!s.empty()) {
+		typedef string::traits_type tr;
+		string::size_type le(s.length() - tr::length("OR "));
+		s = s.substr(0, le);
+	}
+	os << s;
+	get_values_with_categories(os.str(), c, ins);
 }
 
 namespace {
@@ -218,6 +238,17 @@ int Map_impl::get_max_id()
 	auto reader(Record_reader_fun(id, bind(sqlite3_column_int, _1, 0)));
 	max_id_statement->execute(reader);
 	return id;
+}
+
+void Map_impl::get_values_with_categories(const std::string& s,
+	const vector<string>& c, Inserter ins)
+{
+	Statement st(prepare_statement(s));
+	for (size_t i = 0; i < c.size(); ++i)
+		st.bind_parameter(static_cast<int>(i + 1), c.at(i));
+
+	auto collector(Record_collector_fun(ins, convert_get_record));
+	st.execute(collector);
 }
 
 string Map_impl::convert_get_record(sqlite3_stmt* record)
