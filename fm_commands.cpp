@@ -685,22 +685,32 @@ public:
 		return cats;
 	}
 
+	bool is_or() const {
+		return orflag;
+	}
+
 protected:
 	string get_extra_opts() const {
-		return From_stdin_impl::get_extra_opts();
+		return From_stdin_impl::get_extra_opts() + "o";
 	}
 
 	void procopt(int c, const char* arg) {
-		From_stdin_impl::process(c, arg);
+		if (From_stdin_impl::process(c, arg))
+			;
+		else {
+			if (c == 'o')
+				orflag = true;
+		}
 	}
 
 	void procremain(int argc, char* argv[], int index);
 
 private:
-	Get_command() {
+	Get_command()	:	orflag(false) {
 	}
 
 	vector<string> cats;
+	bool orflag;
 };
 
 Get_command Get_command::process_arguments(int argc, char* argv[])
@@ -742,8 +752,12 @@ int get(int argc, char* argv[])
 	if (!manager)
 		return 1;
 	vector<string> results;
-	manager->get_map().get(command.get_categories(),
-		back_inserter(results));
+	if (!command.is_or())
+		manager->get_map().get(command.get_categories(),
+			back_inserter(results));
+	else
+		manager->get_map().getall(command.get_categories(),
+			back_inserter(results));
 	transform(results.begin(), results.end(), results.begin(),
 		bind(to_filepath, ref(*manager), _1));
 	ostream_iterator<string> out_iter(*fmcout, "\n");

@@ -15,6 +15,7 @@ public:
 
 	using Base_impl::set;
 	using Base_impl::get;
+	using Base_impl::getall;
 	using Base_impl::get_categories;
 	using Base_impl::get_values;
 	using Base_impl::copy;

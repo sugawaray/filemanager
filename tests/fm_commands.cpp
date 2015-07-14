@@ -916,6 +916,42 @@ void t6(const char* ms)
 	t.test(ms);
 }
 
+void t7(const char* ms)
+{
+	auto a(Auto_caller(reset_cout));
+	::fm::filemanager::test::Fm_fixture f;
+
+	chdir(f.get_root().to_filepath_string().c_str());
+	Filemanager m(f.get_fm_path());
+	create_emptyfile(f.get_root().child("file1"));
+	set_category(m.get_map(), "file1", "catA");
+
+	create_emptyfile(f.get_root().child("file2"));
+	set_category(m.get_map(), "file2", "catB");
+
+	vector<char> v0(strtovec("fm-get"));
+	vector<char> v1(strtovec("-o"));
+	vector<char> v2(strtovec("catA"));
+	vector<char> v3(strtovec("catB"));
+	the_argv[0] = &v0.at(0);
+	the_argv[1] = &v1.at(0);
+	the_argv[2] = &v2.at(0);
+	the_argv[3] = &v3.at(0);
+	the_argv[4] = 0;
+
+	ostringstream os;
+	fmcout = &os;
+
+	fm::get(4, the_argv);
+
+	vector<string> v;
+	split_string(os.str(), "\n", back_inserter(v));
+	v.pop_back();
+	A(v.size() == 2, __FILE__, __LINE__);
+	A(v.at(0) != "", __FILE__, __LINE__);
+	A(v.at(1) != "", __FILE__, __LINE__);
+}
+
 } // nget
 
 namespace nmv {
@@ -1111,6 +1147,8 @@ void get_tests()
 	run(	"It is not an error if no names are specified "
 		"on the command line but some names specified at "
 		"the standard input.", t6);
+
+	run("It uses OR condition if the -o flag is set.", t7);
 }
 
 void mv_tests()
