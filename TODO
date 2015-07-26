@@ -6,3 +6,5 @@ generally avoided that implicit rules scatter around.
 * fs::copy() function does not have tests for the case of close failures.
 
 * (DONE)avoid using string::back().
+* The method to remove all names from a file should exist. I think it should
+  be done by calling fm-set command without any names.
